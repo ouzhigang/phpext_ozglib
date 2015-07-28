@@ -1,0 +1,5 @@
+*.sdf
+.vs/
+Release/
+tests/
+Debug/
