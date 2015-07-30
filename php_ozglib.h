@@ -44,6 +44,7 @@ PHP_RINIT_FUNCTION(ozglib);
 PHP_RSHUTDOWN_FUNCTION(ozglib);
 PHP_MINFO_FUNCTION(ozglib);
 
+//²¢·¢Ëø
 PHP_FUNCTION(ozg_lock);
 PHP_FUNCTION(ozg_unlock);
 
@@ -100,3 +101,5 @@ ZEND_END_MODULE_GLOBALS(ozglib)
  * vim600: noet sw=4 ts=4 fdm=marker
  * vim<600: noet sw=4 ts=4
  */
+
+

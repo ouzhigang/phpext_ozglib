@@ -27,6 +27,57 @@
 #include "ext/standard/info.h"
 #include "php_ozglib.h"
 
+//定义flock（使用PHP内部函数）的参数
+#ifdef LOCK_SH
+#undef LOCK_SH
+#endif
+#define LOCK_SH 1
+
+#ifdef LOCK_EX
+#undef LOCK_EX
+#endif
+#define LOCK_EX 2
+
+#ifdef LOCK_UN
+#undef LOCK_UN
+#endif
+#define LOCK_UN 3
+
+#ifdef LOCK_NB
+#undef LOCK_NB
+#endif
+#define LOCK_NB 4
+//定义flock（使用PHP内部函数）的参数 end
+
+//直接调用PHP函数
+struct phpfun_return_status
+{
+	bool is_success;
+	zval *retval;
+};
+phpfun_return_status phpfun(const char* fun_name, zval* args[])
+{
+	zval *func;
+	zval *retval;
+
+	MAKE_STD_ZVAL(func);
+	MAKE_STD_ZVAL(retval);
+
+	const int argc = args != NULL ? sizeof(args) / sizeof(char) : 0;
+		
+	ZVAL_STRING(func, fun_name, 1);
+	
+	phpfun_return_status return_status = { false, NULL };
+	if (call_user_function(EG(function_table), NULL, func, retval, argc, args TSRMLS_DC) == SUCCESS)
+	{
+		//return_status.is_success = true;
+		//return_status.retval = retval;
+	}
+
+	return return_status;
+}
+//直接调用PHP函数 end
+
 /* If you declare any globals in php_ozglib.h uncomment this:
 ZEND_DECLARE_MODULE_GLOBALS(ozglib)
 */
@@ -46,9 +97,9 @@ const zend_function_entry ozglib_functions[] = {
 /* }}} */
 
 const zend_function_entry OzgCache_methods[] = {
-	PHP_ME(OzgCache, get, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(OzgCache, set, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(OzgCache, remove, NULL, ZEND_ACC_PUBLIC)
+	PHP_ABSTRACT_ME(OzgCache, get, NULL, ZEND_ACC_PUBLIC)
+	PHP_ABSTRACT_ME(OzgCache, set, NULL, ZEND_ACC_PUBLIC)
+	PHP_ABSTRACT_ME(OzgCache, remove, NULL, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
@@ -60,16 +111,16 @@ const zend_function_entry OzgFileCache_methods[] = {
 };
 
 const zend_function_entry OzgMemCache_methods[] = {
-	PHP_ME(OzgFileCache, get, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(OzgFileCache, set, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(OzgFileCache, remove, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(OzgMemCache, get, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(OzgMemCache, set, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(OzgMemCache, remove, NULL, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
 const zend_function_entry OzgRedisCache_methods[] = {
-	PHP_ME(OzgFileCache, get, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(OzgFileCache, set, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(OzgFileCache, remove, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(OzgRedisCache, get, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(OzgRedisCache, set, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(OzgRedisCache, remove, NULL, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
@@ -145,9 +196,9 @@ PHP_MINIT_FUNCTION(ozglib)
 	zend_class_implements(OzgMemCache_ce TSRMLS_CC, 1, OzgCache_ce);
 
 	//redis
-	INIT_CLASS_ENTRY(OzgMemCache, "OzgMemCache", OzgMemCache_methods);
-	OzgMemCache_ce = zend_register_internal_class(&OzgMemCache TSRMLS_CC);
-	zend_class_implements(OzgMemCache_ce TSRMLS_CC, 1, OzgCache_ce);
+	INIT_CLASS_ENTRY(OzgRedisCache, "OzgRedisCache", OzgRedisCache_methods);
+	OzgRedisCache_ce = zend_register_internal_class(&OzgRedisCache TSRMLS_CC);
+	zend_class_implements(OzgRedisCache_ce TSRMLS_CC, 1, OzgRedisCache_ce);
 
 	return SUCCESS;
 }
@@ -204,8 +255,20 @@ PHP_MINFO_FUNCTION(ozglib)
 
 PHP_FUNCTION(ozg_lock)
 {
-	
-	RETURN_TRUE;
+	zval* args[2];
+	MAKE_STD_ZVAL(args[0]);
+	MAKE_STD_ZVAL(args[1]);
+	ZVAL_STRING(args[0], "D:\\1.txt", 1);
+	ZVAL_STRING(args[1], "w+", 1);
+
+	phpfun_return_status return_status = phpfun("fopen", args);
+	if (return_status.is_success)
+	{
+		
+		zval_dtor(return_status.retval);
+	}
+
+	RETURN_FALSE;
 }
 
 PHP_FUNCTION(ozg_unlock)
