@@ -28,25 +28,10 @@
 #include "php_ozglib.h"
 
 //定义flock（使用PHP内部函数）的参数
-#ifdef LOCK_SH
-#undef LOCK_SH
-#endif
-#define LOCK_SH 1
-
-#ifdef LOCK_EX
-#undef LOCK_EX
-#endif
-#define LOCK_EX 2
-
-#ifdef LOCK_UN
-#undef LOCK_UN
-#endif
-#define LOCK_UN 3
-
-#ifdef LOCK_NB
-#undef LOCK_NB
-#endif
-#define LOCK_NB 4
+#define F_LOCK_SH 1 //要取得共享锁定（读取程序）
+#define F_LOCK_EX 2 //要取得独占锁定（写入程序）
+#define F_LOCK_UN 3 //要释放锁定（无论共享或独占）
+#define F_LOCK_NB 4 //如果你不希望 flock() 在锁定时堵塞，则给 operation 加上 LOCK_NB
 //定义flock（使用PHP内部函数）的参数 end
 
 //直接调用PHP函数
@@ -55,23 +40,21 @@ struct phpfun_return_status
 	bool is_success;
 	zval *retval;
 };
-phpfun_return_status phpfun(const char* fun_name, zval* args[])
+phpfun_return_status phpfun(const char* fun_name, zend_uint argc, zval* args[])
 {
 	zval *func;
 	zval *retval;
 
 	MAKE_STD_ZVAL(func);
 	MAKE_STD_ZVAL(retval);
-
-	const int argc = args != NULL ? sizeof(args) / sizeof(char) : 0;
-		
+	
 	ZVAL_STRING(func, fun_name, 1);
 	
 	phpfun_return_status return_status = { false, NULL };
-	if (call_user_function(EG(function_table), NULL, func, retval, argc, args TSRMLS_DC) == SUCCESS)
+	if (call_user_function(EG(function_table), NULL, func, retval, argc, args TSRMLS_CC) == SUCCESS)
 	{
-		//return_status.is_success = true;
-		//return_status.retval = retval;
+		return_status.is_success = true;
+		return_status.retval = retval;
 	}
 
 	return return_status;
@@ -97,9 +80,9 @@ const zend_function_entry ozglib_functions[] = {
 /* }}} */
 
 const zend_function_entry OzgCache_methods[] = {
-	PHP_ABSTRACT_ME(OzgCache, get, NULL, ZEND_ACC_PUBLIC)
-	PHP_ABSTRACT_ME(OzgCache, set, NULL, ZEND_ACC_PUBLIC)
-	PHP_ABSTRACT_ME(OzgCache, remove, NULL, ZEND_ACC_PUBLIC)
+	PHP_ABSTRACT_ME(OzgCache, get, NULL)
+	PHP_ABSTRACT_ME(OzgCache, set, NULL)
+	PHP_ABSTRACT_ME(OzgCache, remove, NULL)
 	PHP_FE_END
 };
 
@@ -253,18 +236,52 @@ PHP_MINFO_FUNCTION(ozglib)
    so that your module can be compiled into PHP, it exists only for testing
    purposes. */
 
+long lock_fp = 0;
+const char* lock_name = "D:\\1.txt";
 PHP_FUNCTION(ozg_lock)
 {
 	zval* args[2];
 	MAKE_STD_ZVAL(args[0]);
 	MAKE_STD_ZVAL(args[1]);
-	ZVAL_STRING(args[0], "D:\\1.txt", 1);
-	ZVAL_STRING(args[1], "w+", 1);
-
-	phpfun_return_status return_status = phpfun("fopen", args);
+	ZVAL_STRING(args[0], lock_name, 1);
+	ZVAL_STRING(args[1], "a+", 1);
+	phpfun_return_status return_status = phpfun("fopen", 2, args);
 	if (return_status.is_success)
 	{
-		
+		lock_fp = Z_RESVAL_P(return_status.retval);
+
+		zval* args2[2];
+		MAKE_STD_ZVAL(args2[0]);
+		MAKE_STD_ZVAL(args2[1]);
+		ZVAL_RESOURCE(args2[0], lock_fp);
+		ZVAL_LONG(args2[1], F_LOCK_EX);
+		phpfun_return_status return_status2 = phpfun("flock", 2, args2);
+		if (return_status2.is_success)
+		{
+			zval* args3[2];
+			MAKE_STD_ZVAL(args3[0]);
+			MAKE_STD_ZVAL(args3[1]);
+			ZVAL_RESOURCE(args3[0], lock_fp);
+			ZVAL_STRING(args3[1], "ok\r\n", 1);
+			phpfun_return_status return_status3 = phpfun("fwrite", 2, args3);
+			if (return_status3.is_success)
+			{
+				zval* args4[1];
+				MAKE_STD_ZVAL(args4[0]);
+				ZVAL_RESOURCE(args4[0], lock_fp);
+				phpfun_return_status return_status4 = phpfun("fflush", 1, args4);
+				if (return_status4.is_success)
+				{
+					zval_dtor(return_status4.retval);
+					RETURN_TRUE;
+				}
+
+				zval_dtor(return_status3.retval);				
+			}
+
+			zval_dtor(return_status2.retval);
+		}
+
 		zval_dtor(return_status.retval);
 	}
 
@@ -273,7 +290,31 @@ PHP_FUNCTION(ozg_lock)
 
 PHP_FUNCTION(ozg_unlock)
 {
+	if (lock_fp != 0)
+	{
+		zval* args[2];
+		MAKE_STD_ZVAL(args[0]);
+		MAKE_STD_ZVAL(args[1]);
+		ZVAL_RESOURCE(args[0], lock_fp);
+		ZVAL_LONG(args[1], F_LOCK_UN);
+		phpfun_return_status return_status = phpfun("flock", 2, args);
+		if (return_status.is_success)
+		{
+			zval* args2[1];
+			MAKE_STD_ZVAL(args2[0]);
+			ZVAL_RESOURCE(args2[0], lock_fp);
+			phpfun_return_status return_status2 = phpfun("fclose", 1, args2);
+			if (return_status2.is_success)
+			{
+				zval_dtor(return_status2.retval);
+				remove(lock_name);
+			}
 
+			zval_dtor(return_status.retval);
+		}
+		
+	}
+	lock_fp = 0;
 	RETURN_TRUE;
 }
 
