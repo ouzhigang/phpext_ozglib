@@ -26,13 +26,7 @@
 #include "php_ini.h"
 #include "ext/standard/info.h"
 #include "php_ozglib.h"
-
-//定义flock（使用PHP内部函数）的参数
-#define F_LOCK_SH 1 //要取得共享锁定（读取程序）
-#define F_LOCK_EX 2 //要取得独占锁定（写入程序）
-#define F_LOCK_UN 3 //要释放锁定（无论共享或独占）
-#define F_LOCK_NB 4 //如果你不希望 flock() 在锁定时堵塞，则给 operation 加上 LOCK_NB
-//定义flock（使用PHP内部函数）的参数 end
+#include "ozglib_cfg.h"
 
 //直接调用PHP函数
 struct phpfun_return_status
@@ -237,13 +231,15 @@ PHP_MINFO_FUNCTION(ozglib)
    purposes. */
 
 long lock_fp = 0;
-const char* lock_name = "D:\\1.txt";
 PHP_FUNCTION(ozg_lock)
 {
+#ifdef WIN32
+	//win32无flock函数，使用php内置函数来实现
+
 	zval* args[2];
 	MAKE_STD_ZVAL(args[0]);
 	MAKE_STD_ZVAL(args[1]);
-	ZVAL_STRING(args[0], lock_name, 1);
+	ZVAL_STRING(args[0], F_LOCK_NAME, 1);
 	ZVAL_STRING(args[1], "a+", 1);
 	phpfun_return_status return_status = phpfun("fopen", 2, args);
 	if (return_status.is_success)
@@ -284,7 +280,11 @@ PHP_FUNCTION(ozg_lock)
 
 		zval_dtor(return_status.retval);
 	}
+#else
 
+	RETURN_TRUE;
+
+#endif
 	RETURN_FALSE;
 }
 
@@ -292,6 +292,9 @@ PHP_FUNCTION(ozg_unlock)
 {
 	if (lock_fp != 0)
 	{
+#ifdef WIN32
+		//win32无flock函数，使用php内置函数来实现
+
 		zval* args[2];
 		MAKE_STD_ZVAL(args[0]);
 		MAKE_STD_ZVAL(args[1]);
@@ -307,12 +310,16 @@ PHP_FUNCTION(ozg_unlock)
 			if (return_status2.is_success)
 			{
 				zval_dtor(return_status2.retval);
-				remove(lock_name);
+				remove(F_LOCK_NAME);
 			}
 
 			zval_dtor(return_status.retval);
 		}
-		
+#else
+
+
+
+#endif
 	}
 	lock_fp = 0;
 	RETURN_TRUE;

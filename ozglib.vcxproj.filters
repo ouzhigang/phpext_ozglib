@@ -18,6 +18,9 @@
     <ClInclude Include="php_ozglib.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ozglib_cfg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ozglib.cpp">
