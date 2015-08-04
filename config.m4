@@ -13,9 +13,9 @@ dnl [  --with-ozglib             Include ozglib support])
 
 dnl Otherwise use enable:
 
-dnl PHP_ARG_ENABLE(ozglib, whether to enable ozglib support,
-dnl Make sure that the comment is aligned:
-dnl [  --enable-ozglib           Enable ozglib support])
+PHP_ARG_ENABLE(ozglib, whether to enable ozglib support,
+Make sure that the comment is aligned:
+[  --enable-ozglib           Enable ozglib support])
 
 if test "$PHP_OZGLIB" != "no"; then
   dnl Write more examples of tests here...

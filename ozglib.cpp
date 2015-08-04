@@ -28,6 +28,11 @@
 #include "php_ozglib.h"
 #include "ozglib_cfg.h"
 
+#ifndef WIN32
+#include <sys/file.h>
+
+#endif
+
 //直接调用PHP函数
 struct phpfun_return_status
 {
@@ -127,12 +132,13 @@ ZEND_GET_MODULE(ozglib)
 
 /* {{{ PHP_INI
  */
-/* Remove comments and fill if you need to have entries in php.ini
+
 PHP_INI_BEGIN()
-    STD_PHP_INI_ENTRY("ozglib.global_value",      "42", PHP_INI_ALL, OnUpdateLong, global_value, zend_ozglib_globals, ozglib_globals)
-    STD_PHP_INI_ENTRY("ozglib.global_string", "foobar", PHP_INI_ALL, OnUpdateString, global_string, zend_ozglib_globals, ozglib_globals)
+	PHP_INI_ENTRY("ozglib.lock_name", F_LOCK_NAME, PHP_INI_ALL, NULL)
+    //STD_PHP_INI_ENTRY("ozglib.global_value",      "42", PHP_INI_ALL, OnUpdateLong, global_value, zend_ozglib_globals, ozglib_globals)
+    //STD_PHP_INI_ENTRY("ozglib.global_string", "foobar", PHP_INI_ALL, OnUpdateString, global_string, zend_ozglib_globals, ozglib_globals)
 PHP_INI_END()
-*/
+
 /* }}} */
 
 /* {{{ php_ozglib_init_globals
@@ -152,9 +158,7 @@ zend_class_entry *OzgCache_ce, *OzgFileCache_ce, *OzgMemCache_ce, *OzgRedisCache
  */
 PHP_MINIT_FUNCTION(ozglib)
 {
-	/* If you have INI entries, uncomment these lines 
 	REGISTER_INI_ENTRIES();
-	*/
 
 	zend_class_entry OzgCache, OzgFileCache, OzgMemCache, OzgRedisCache;
 	
@@ -185,9 +189,8 @@ PHP_MINIT_FUNCTION(ozglib)
  */
 PHP_MSHUTDOWN_FUNCTION(ozglib)
 {
-	/* uncomment this line if you have INI entries
 	UNREGISTER_INI_ENTRIES();
-	*/
+
 	return SUCCESS;
 }
 /* }}} */
@@ -230,16 +233,23 @@ PHP_MINFO_FUNCTION(ozglib)
    so that your module can be compiled into PHP, it exists only for testing
    purposes. */
 
+#ifdef WIN32
 long lock_fp = 0;
+#else
+int lock_fp = -1;
+#endif
+
 PHP_FUNCTION(ozg_lock)
 {
+	char* f_lock_name = INI_STR("ozglib.lock_name");
+
 #ifdef WIN32
 	//win32无flock函数，使用php内置函数来实现
 
 	zval* args[2];
 	MAKE_STD_ZVAL(args[0]);
 	MAKE_STD_ZVAL(args[1]);
-	ZVAL_STRING(args[0], F_LOCK_NAME, 1);
+	ZVAL_STRING(args[0], f_lock_name, 1);
 	ZVAL_STRING(args[1], "a+", 1);
 	phpfun_return_status return_status = phpfun("fopen", 2, args);
 	if (return_status.is_success)
@@ -279,20 +289,32 @@ PHP_FUNCTION(ozg_lock)
 		}
 
 		zval_dtor(return_status.retval);
-	}
+	}		
 #else
-
-	RETURN_TRUE;
-
+	//非win32下
+	const char* tmp = "ok\r\n";
+	lock_fp = open(f_lock_name, O_RDWR | O_CREAT, S_IRUSR);
+	if (lock_fp != -1)
+	{
+		int res = flock(lock_fp, LOCK_EX);
+		if (res == 0)
+		{
+			write(lock_fp, tmp, sizeof(tmp));
+			RETURN_TRUE;
+		}		
+	}	
 #endif
+
 	RETURN_FALSE;
 }
 
 PHP_FUNCTION(ozg_unlock)
 {
+	char* f_lock_name = INI_STR("ozglib.lock_name");
+
+#ifdef WIN32
 	if (lock_fp != 0)
 	{
-#ifdef WIN32
 		//win32无flock函数，使用php内置函数来实现
 
 		zval* args[2];
@@ -310,18 +332,27 @@ PHP_FUNCTION(ozg_unlock)
 			if (return_status2.is_success)
 			{
 				zval_dtor(return_status2.retval);
-				remove(F_LOCK_NAME);
+				remove(f_lock_name);
 			}
 
 			zval_dtor(return_status.retval);
 		}
-#else
-
-
-
-#endif
 	}
 	lock_fp = 0;
+#else
+	//非win32下
+	if (lock_fp != -1)
+	{
+		int res = flock(lock_fp, LOCK_UN);
+		if (res == 0)
+		{
+			close(lock_fp);
+			remove(f_lock_name);
+		}
+	}
+	lock_fp = -1;
+#endif
+	
 	RETURN_TRUE;
 }
 
