@@ -13,4 +13,13 @@
 
 #define F_LOCK_NAME "./lock.tmp" //并发锁的临时文件路径（默认，如果php.ini设置了该路径，这个路径就会被覆盖）
 
+//ozglib_rand_str函数的常量
+#define OZGLIB_RAND_STR_LOWER 0x00000001
+#define OZGLIB_RAND_STR_UPPER 0x00000002
+#define OZGLIB_RAND_STR_NUMBER 0x00000003
+#define OZGLIB_RAND_STR_LOWER_UPPER 0x00000004
+#define OZGLIB_RAND_STR_UPPER_NUMBER 0x00000005
+#define OZGLIB_RAND_STR_LOWER_NUMBER 0x00000006
+#define OZGLIB_RAND_STR_ALL 0x00000007
+
 #endif

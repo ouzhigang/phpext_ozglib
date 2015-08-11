@@ -60,10 +60,6 @@ phpfun_return_status phpfun(const char* fun_name, zend_uint argc, zval* args[])
 }
 //直接调用PHP函数 end
 
-/* If you declare any globals in php_ozglib.h uncomment this:
-ZEND_DECLARE_MODULE_GLOBALS(ozglib)
-*/
-
 /* True global resources - no need for thread safety here */
 static int le_ozglib;
 
@@ -72,37 +68,30 @@ static int le_ozglib;
  * Every user visible function must have an entry in ozglib_functions[].
  */
 const zend_function_entry ozglib_functions[] = {
-	PHP_FE(ozg_lock, NULL)
-	PHP_FE(ozg_unlock, NULL)
+	PHP_FE(ozglib_lock, NULL)
+	PHP_FE(ozglib_unlock, NULL)
+	PHP_FE(ozglib_page_count, NULL)
+	PHP_FE(ozglib_rand_str, NULL)
 	PHP_FE_END
 };
 /* }}} */
 
-const zend_function_entry OzgCache_methods[] = {
-	PHP_ABSTRACT_ME(OzgCache, get, NULL)
-	PHP_ABSTRACT_ME(OzgCache, set, NULL)
-	PHP_ABSTRACT_ME(OzgCache, remove, NULL)
+const zend_function_entry Encrypt_methods[] = {
+	PHP_ME(Encrypt, encode, NULL, ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)
+	PHP_ME(Encrypt, decode, NULL, ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
-const zend_function_entry OzgFileCache_methods[] = {
-	PHP_ME(OzgFileCache, get, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(OzgFileCache, set, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(OzgFileCache, remove, NULL, ZEND_ACC_PUBLIC)
-	PHP_FE_END
-};
-
-const zend_function_entry OzgMemCache_methods[] = {
-	PHP_ME(OzgMemCache, get, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(OzgMemCache, set, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(OzgMemCache, remove, NULL, ZEND_ACC_PUBLIC)
-	PHP_FE_END
-};
-
-const zend_function_entry OzgRedisCache_methods[] = {
-	PHP_ME(OzgRedisCache, get, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(OzgRedisCache, set, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(OzgRedisCache, remove, NULL, ZEND_ACC_PUBLIC)
+const zend_function_entry FileUtility_methods[] = {
+	PHP_ME(FileUtility, createDir, NULL, ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)
+	PHP_ME(FileUtility, createFile, NULL, ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)
+	PHP_ME(FileUtility, moveDir, NULL, ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)
+	PHP_ME(FileUtility, moveFile, NULL, ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)
+	PHP_ME(FileUtility, unlinkDir, NULL, ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)
+	PHP_ME(FileUtility, unlinkFile, NULL, ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)
+	PHP_ME(FileUtility, copyDir, NULL, ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)
+	PHP_ME(FileUtility, copyFile, NULL, ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)
+	PHP_ME(FileUtility, getDirList, NULL, ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
@@ -152,7 +141,7 @@ static void php_ozglib_init_globals(zend_ozglib_globals *ozglib_globals)
 */
 /* }}} */
 
-zend_class_entry *OzgCache_ce, *OzgFileCache_ce, *OzgMemCache_ce, *OzgRedisCache_ce;
+zend_class_entry *Encrypt_ce, *FileUtility_ce;
 
 /* {{{ PHP_MINIT_FUNCTION
  */
@@ -160,26 +149,30 @@ PHP_MINIT_FUNCTION(ozglib)
 {
 	REGISTER_INI_ENTRIES();
 
-	zend_class_entry OzgCache, OzgFileCache, OzgMemCache, OzgRedisCache;
+	zend_class_entry Encrypt, FileUtility;
+
+//php5.3以上支持namespace
+#if PHP_VERSION_ID >= 50300
+	//支持namespace
+	INIT_NS_CLASS_ENTRY(Encrypt, "ozglib", "Encrypt", Encrypt_methods);
+	INIT_NS_CLASS_ENTRY(FileUtility, "ozglib", "FileUtility", FileUtility_methods);
+#else
+	//不支持namespace，加上Ozg的前缀
+	INIT_CLASS_ENTRY(Encrypt, "OzgLibEncrypt", Encrypt_methods); //定义OzgLibEncrypt类
+	INIT_CLASS_ENTRY(FileUtility, "OzgLibFileUtility", FileUtility_methods); //定义OzgLibFileUtility类
+#endif
+
+	Encrypt_ce = zend_register_internal_class(&Encrypt TSRMLS_CC);
+	FileUtility_ce = zend_register_internal_class(&FileUtility TSRMLS_CC);
 	
-	//定义OzgCache的interface
-	INIT_CLASS_ENTRY(OzgCache, "OzgCache", OzgCache_methods);
-	OzgCache_ce = zend_register_internal_interface(&OzgCache TSRMLS_CC);
-
-	//文件缓存
-	INIT_CLASS_ENTRY(OzgFileCache, "OzgFileCache", OzgFileCache_methods);
-	OzgFileCache_ce = zend_register_internal_class(&OzgFileCache TSRMLS_CC);
-	zend_class_implements(OzgFileCache_ce TSRMLS_CC, 1, OzgCache_ce);
-
-	//memcache
-	INIT_CLASS_ENTRY(OzgMemCache, "OzgMemCache", OzgMemCache_methods);
-	OzgMemCache_ce = zend_register_internal_class(&OzgMemCache TSRMLS_CC);
-	zend_class_implements(OzgMemCache_ce TSRMLS_CC, 1, OzgCache_ce);
-
-	//redis
-	INIT_CLASS_ENTRY(OzgRedisCache, "OzgRedisCache", OzgRedisCache_methods);
-	OzgRedisCache_ce = zend_register_internal_class(&OzgRedisCache TSRMLS_CC);
-	zend_class_implements(OzgRedisCache_ce TSRMLS_CC, 1, OzgRedisCache_ce);
+	//注册本模块的常量
+	REGISTER_MAIN_LONG_CONSTANT("OZGLIB_RAND_STR_LOWER", OZGLIB_RAND_STR_LOWER, CONST_PERSISTENT | CONST_CS);
+	REGISTER_MAIN_LONG_CONSTANT("OZGLIB_RAND_STR_UPPER", OZGLIB_RAND_STR_UPPER, CONST_PERSISTENT | CONST_CS);
+	REGISTER_MAIN_LONG_CONSTANT("OZGLIB_RAND_STR_NUMBER", OZGLIB_RAND_STR_NUMBER, CONST_PERSISTENT | CONST_CS);
+	REGISTER_MAIN_LONG_CONSTANT("OZGLIB_RAND_STR_LOWER_UPPER", OZGLIB_RAND_STR_LOWER_UPPER, CONST_PERSISTENT | CONST_CS);
+	REGISTER_MAIN_LONG_CONSTANT("OZGLIB_RAND_STR_UPPER_NUMBER", OZGLIB_RAND_STR_UPPER_NUMBER, CONST_PERSISTENT | CONST_CS);
+	REGISTER_MAIN_LONG_CONSTANT("OZGLIB_RAND_STR_LOWER_NUMBER", OZGLIB_RAND_STR_LOWER_NUMBER, CONST_PERSISTENT | CONST_CS);
+	REGISTER_MAIN_LONG_CONSTANT("OZGLIB_RAND_STR_ALL", OZGLIB_RAND_STR_ALL, CONST_PERSISTENT | CONST_CS);
 
 	return SUCCESS;
 }
@@ -239,7 +232,7 @@ long lock_fp = 0;
 int lock_fp = -1;
 #endif
 
-PHP_FUNCTION(ozg_lock)
+PHP_FUNCTION(ozglib_lock)
 {
 	char* f_lock_name = INI_STR("ozglib.lock_name");
 
@@ -308,7 +301,7 @@ PHP_FUNCTION(ozg_lock)
 	RETURN_FALSE;
 }
 
-PHP_FUNCTION(ozg_unlock)
+PHP_FUNCTION(ozglib_unlock)
 {
 	char* f_lock_name = INI_STR("ozglib.lock_name");
 
@@ -356,73 +349,150 @@ PHP_FUNCTION(ozg_unlock)
 	RETURN_TRUE;
 }
 
-//OzgCache
-PHP_METHOD(OzgCache, set)
+PHP_FUNCTION(ozglib_page_count)
 {
+	long count = NULL, page_size = NULL;
 
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ll", &count, &page_size) == FAILURE)
+		RETURN_FALSE;
+	
+	if (count <= 0 || page_size <= 0)
+	{
+		RETURN_LONG(0);
+	}
+
+	if (count % page_size == 0)
+	{
+		RETURN_LONG(count / page_size);
+	}
+	else
+	{
+		RETURN_LONG((long)floor(count / page_size) + 1);
+	}
 }
 
-PHP_METHOD(OzgCache, get)
+PHP_FUNCTION(ozglib_rand_str)
 {
+	long type = NULL, len = NULL;
 
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ll", &type, &len) == FAILURE)
+		RETURN_FALSE;
+
+	const char* str1 = "abcdefghijklmnopqrstuvwxyz";
+	const char* str2 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	const char* str3 = "0123456789";
+
+	char str[128];
+
+	switch (type)
+	{
+		case OZGLIB_RAND_STR_LOWER:
+			sprintf(str, "%s", str1);
+			break;
+		case OZGLIB_RAND_STR_UPPER:
+			sprintf(str, "%s", str2);
+			break;
+		case OZGLIB_RAND_STR_NUMBER:
+			sprintf(str, "%s", str3);
+			break;
+		case OZGLIB_RAND_STR_LOWER_UPPER:
+			sprintf(str, "%s%s", str1, str2);
+			break;
+		case OZGLIB_RAND_STR_UPPER_NUMBER:
+			sprintf(str, "%s%s", str2, str3);
+			break;
+		case OZGLIB_RAND_STR_LOWER_NUMBER:
+			sprintf(str, "%s%s", str1, str3);
+			break;
+		case OZGLIB_RAND_STR_ALL:
+			sprintf(str, "%s%s%s", str1, str2, str3);
+			break;
+		default:
+			RETURN_FALSE;
+			break;
+	}
+	
+	char *output = (char*)emalloc(len + 1);
+	for (long i = 0; i < len; i++)
+	{
+		int j = rand() % strlen(str);
+		output[i] = str[j];
+	}
+
+	output[len] = '\0';
+	RETURN_STRING(output, 0);
 }
 
-PHP_METHOD(OzgCache, remove)
+//Encrypt
+PHP_METHOD(Encrypt, encode)
 {
 
+	RETURN_FALSE;
 }
-//OzgCache end
 
-//OzgFileCache
-PHP_METHOD(OzgFileCache, set)
+PHP_METHOD(Encrypt, decode)
 {
 
+	RETURN_FALSE;
 }
+//Encrypt end
 
-PHP_METHOD(OzgFileCache, get)
+//FileUtility
+PHP_METHOD(FileUtility, createDir)
 {
 
+	RETURN_FALSE;
 }
 
-PHP_METHOD(OzgFileCache, remove)
+PHP_METHOD(FileUtility, createFile)
 {
 
+	RETURN_FALSE;
 }
-//OzgFileCache end
 
-//OzgMemCache
-PHP_METHOD(OzgMemCache, set)
+PHP_METHOD(FileUtility, moveDir)
 {
 
+	RETURN_FALSE;
 }
 
-PHP_METHOD(OzgMemCache, get)
+PHP_METHOD(FileUtility, moveFile)
 {
 
+	RETURN_FALSE;
 }
 
-PHP_METHOD(OzgMemCache, remove)
+PHP_METHOD(FileUtility, unlinkDir)
 {
 
+	RETURN_FALSE;
 }
-//OzgMemCache end
 
-//OzgRedisCache
-PHP_METHOD(OzgRedisCache, set)
+PHP_METHOD(FileUtility, unlinkFile)
 {
 
+	RETURN_FALSE;
 }
 
-PHP_METHOD(OzgRedisCache, get)
+PHP_METHOD(FileUtility, copyDir)
 {
 
+	RETURN_FALSE;
 }
 
-PHP_METHOD(OzgRedisCache, remove)
+PHP_METHOD(FileUtility, copyFile)
 {
 
+	RETURN_FALSE;
 }
-//OzgRedisCache end
+
+PHP_METHOD(FileUtility, getDirList)
+{
+
+	RETURN_FALSE;
+}
+
+//FileUtility end
 
 /* }}} */
 /* The previous line is meant for vim and emacs, so it can correctly fold and 

@@ -24,7 +24,7 @@
 extern zend_module_entry ozglib_module_entry;
 #define phpext_ozglib_ptr &ozglib_module_entry
 
-#define PHP_OZGLIB_VERSION "20150728" /* Replace with version number for your extension */
+#define PHP_OZGLIB_VERSION "20150810" /* Replace with version number for your extension */
 
 #ifdef PHP_WIN32
 #	define PHP_OZGLIB_API __declspec(dllexport)
@@ -45,34 +45,31 @@ PHP_RSHUTDOWN_FUNCTION(ozglib);
 PHP_MINFO_FUNCTION(ozglib);
 
 //并发锁
-PHP_FUNCTION(ozg_lock);
-PHP_FUNCTION(ozg_unlock);
+PHP_FUNCTION(ozglib_lock);
+PHP_FUNCTION(ozglib_unlock);
 
-PHP_METHOD(OzgCache, get);
-PHP_METHOD(OzgCache, set);
-PHP_METHOD(OzgCache, remove);
+//公用函数
+PHP_FUNCTION(ozglib_page_count);
+PHP_FUNCTION(ozglib_rand_str);
 
-PHP_METHOD(OzgFileCache, get);
-PHP_METHOD(OzgFileCache, set);
-PHP_METHOD(OzgFileCache, remove);
+//可逆加密
+PHP_METHOD(Encrypt, encode);
+PHP_METHOD(Encrypt, decode);
 
-PHP_METHOD(OzgMemCache, get);
-PHP_METHOD(OzgMemCache, set);
-PHP_METHOD(OzgMemCache, remove);
+//文件操作
+PHP_METHOD(FileUtility, createDir);
+PHP_METHOD(FileUtility, createFile);
+PHP_METHOD(FileUtility, moveDir);
+PHP_METHOD(FileUtility, moveFile);
+PHP_METHOD(FileUtility, unlinkDir);
+PHP_METHOD(FileUtility, unlinkFile);
+PHP_METHOD(FileUtility, copyDir);
+PHP_METHOD(FileUtility, copyFile);
+PHP_METHOD(FileUtility, getDirList);
 
-PHP_METHOD(OzgRedisCache, get);
-PHP_METHOD(OzgRedisCache, set);
-PHP_METHOD(OzgRedisCache, remove);
-
-/* 
-  	Declare any global variables you may need between the BEGIN
-	and END macros here:     
-
-ZEND_BEGIN_MODULE_GLOBALS(ozglib)
-	long  global_value;
-	char *global_string;
-ZEND_END_MODULE_GLOBALS(ozglib)
-*/
+/*ZEND_BEGIN_MODULE_GLOBALS(ozglib)
+	
+ZEND_END_MODULE_GLOBALS(ozglib)*/
 
 /* In every utility function you add that needs to use variables 
    in php_ozglib_globals, call TSRMLS_FETCH(); after declaring other 
@@ -83,12 +80,6 @@ ZEND_END_MODULE_GLOBALS(ozglib)
    encouraged to rename these macros something shorter, see
    examples in any other php module directory.
 */
-
-#ifdef ZTS
-#define OZGLIB_G(v) TSRMG(ozglib_globals_id, zend_ozglib_globals *, v)
-#else
-#define OZGLIB_G(v) (ozglib_globals.v)
-#endif
 
 #endif	/* PHP_OZGLIB_H */
 
