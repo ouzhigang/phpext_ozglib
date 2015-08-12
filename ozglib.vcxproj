@@ -100,9 +100,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ozgcc\AES.cpp" />
     <ClCompile Include="ozglib.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ozgcc\AES.h" />
     <ClInclude Include="ozglib_cfg.h" />
     <ClInclude Include="php_ozglib.h" />
   </ItemGroup>

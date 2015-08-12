@@ -24,7 +24,7 @@
 extern zend_module_entry ozglib_module_entry;
 #define phpext_ozglib_ptr &ozglib_module_entry
 
-#define PHP_OZGLIB_VERSION "20150810" /* Replace with version number for your extension */
+#define PHP_OZGLIB_VERSION "20150812" /* Replace with version number for your extension */
 
 #ifdef PHP_WIN32
 #	define PHP_OZGLIB_API __declspec(dllexport)

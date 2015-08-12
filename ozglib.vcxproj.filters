@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
+    <Filter Include="Header Files\ozgcc">
+      <UniqueIdentifier>{442c87b0-e24c-4529-b1c2-b9033a09362c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ozgcc">
+      <UniqueIdentifier>{82ffc586-b6b3-4622-a20c-850ba5955e58}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="php_ozglib.h">
@@ -21,10 +27,16 @@
     <ClInclude Include="ozglib_cfg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ozgcc\AES.h">
+      <Filter>Header Files\ozgcc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ozglib.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ozgcc\AES.cpp">
+      <Filter>Source Files\ozgcc</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -27,6 +27,7 @@
 #include "ext/standard/info.h"
 #include "php_ozglib.h"
 #include "ozglib_cfg.h"
+#include "ozgcc/AES.h"
 
 #ifndef WIN32
 #include <sys/file.h>
@@ -426,14 +427,36 @@ PHP_FUNCTION(ozglib_rand_str)
 //Encrypt
 PHP_METHOD(Encrypt, encode)
 {
+	char *text;
+	int text_len;
+	char *key = ENCRYPT_DEFAULT_KEY; //默认key
+	int key_len = sizeof(ENCRYPT_DEFAULT_KEY) - 1;
 
-	RETURN_FALSE;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|s", &text, &text_len, &key, &key_len) == FAILURE)
+		RETURN_FALSE;
+
+	char output[1024]; //暂定这个大小
+	ozgcc::AES aes((unsigned char*)key);
+	aes.Cipher(text, output); //加密
+	
+	RETURN_STRING(output, 1);
 }
 
 PHP_METHOD(Encrypt, decode)
 {
+	char *encode_str;
+	int encode_str_len;
+	char *key = ENCRYPT_DEFAULT_KEY; //默认key
+	int key_len = sizeof(ENCRYPT_DEFAULT_KEY) - 1;
 
-	RETURN_FALSE;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|s", &encode_str, &encode_str_len, &key, &key_len) == FAILURE)
+		RETURN_FALSE;
+
+	char output[1024]; //暂定这个大小
+	ozgcc::AES aes((unsigned char*)key);
+	aes.InvCipher(encode_str, output); //解密
+
+	RETURN_STRING(output, 1);
 }
 //Encrypt end
 
