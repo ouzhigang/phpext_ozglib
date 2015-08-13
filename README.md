@@ -41,11 +41,11 @@ $page_count = ozglib_page_count(11, 5);
 $rand_str = ozglib_rand_str(OZGLIB_RAND_STR_ALL, 10);
 
 //AES加密
-//Encrypt::encode为加密方法，参数1为加密前的字符串，参数2为key（默认值在ozglib_cfg.h里面设置）
-//Encrypt::decode为解密方法，参数1为加密后的字符串，参数2为key（默认值在ozglib_cfg.h里面设置）
-use \ozglib\Encrypt;
+//AES::encode为加密方法，参数1为加密前的字符串，参数2为key（默认值在ozglib_cfg.h里面设置）
+//AES::decode为解密方法，参数1为加密后的字符串，参数2为key（默认值在ozglib_cfg.h里面设置）
+use \ozglib\encrypt\AES;
 $str = "ozglib";
-$str_encode = Encrypt::encode($str);
-$str_decode = Encrypt::decode($str_encode);
+$str_encode = AES::encode($str);
+$str_decode = AES::decode($str_encode);
 var_dump($str_encode);
 var_dump($str_decode);

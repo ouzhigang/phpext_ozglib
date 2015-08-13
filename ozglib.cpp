@@ -77,9 +77,9 @@ const zend_function_entry ozglib_functions[] = {
 };
 /* }}} */
 
-const zend_function_entry Encrypt_methods[] = {
-	PHP_ME(Encrypt, encode, NULL, ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)
-	PHP_ME(Encrypt, decode, NULL, ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)
+const zend_function_entry encrypt_AES_methods[] = {
+	PHP_ME(encrypt_AES, encode, NULL, ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)
+	PHP_ME(encrypt_AES, decode, NULL, ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
@@ -142,7 +142,7 @@ static void php_ozglib_init_globals(zend_ozglib_globals *ozglib_globals)
 */
 /* }}} */
 
-zend_class_entry *Encrypt_ce, *FileUtility_ce;
+zend_class_entry *encrypt_AES_ce, *FileUtility_ce;
 
 /* {{{ PHP_MINIT_FUNCTION
  */
@@ -150,20 +150,20 @@ PHP_MINIT_FUNCTION(ozglib)
 {
 	REGISTER_INI_ENTRIES();
 
-	zend_class_entry Encrypt, FileUtility;
+	zend_class_entry encrypt_AES, FileUtility;
 
 //php5.3以上支持namespace
 #if PHP_VERSION_ID >= 50300
 	//支持namespace
-	INIT_NS_CLASS_ENTRY(Encrypt, "ozglib", "Encrypt", Encrypt_methods);
+	INIT_NS_CLASS_ENTRY(encrypt_AES, "ozglib\\encrypt", "AES", encrypt_AES_methods);
 	INIT_NS_CLASS_ENTRY(FileUtility, "ozglib", "FileUtility", FileUtility_methods);
 #else
 	//不支持namespace，加上Ozg的前缀
-	INIT_CLASS_ENTRY(Encrypt, "OzgLibEncrypt", Encrypt_methods); //定义OzgLibEncrypt类
+	INIT_CLASS_ENTRY(AES, "OzgLibEncryptAES", encrypt_AES_methods); //定义OzgLibEncryptAES类
 	INIT_CLASS_ENTRY(FileUtility, "OzgLibFileUtility", FileUtility_methods); //定义OzgLibFileUtility类
 #endif
 
-	Encrypt_ce = zend_register_internal_class(&Encrypt TSRMLS_CC);
+	encrypt_AES_ce = zend_register_internal_class(&encrypt_AES TSRMLS_CC);
 	FileUtility_ce = zend_register_internal_class(&FileUtility TSRMLS_CC);
 	
 	//注册本模块的常量
@@ -424,13 +424,13 @@ PHP_FUNCTION(ozglib_rand_str)
 	RETURN_STRING(output, 0);
 }
 
-//Encrypt
-PHP_METHOD(Encrypt, encode)
+//AES
+PHP_METHOD(encrypt_AES, encode)
 {
 	char *text;
 	int text_len;
-	char *key = ENCRYPT_DEFAULT_KEY; //默认key
-	int key_len = sizeof(ENCRYPT_DEFAULT_KEY) - 1;
+	char *key = ENCRYPT_AES_KEY; //默认key
+	int key_len = sizeof(ENCRYPT_AES_KEY) - 1;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|s", &text, &text_len, &key, &key_len) == FAILURE)
 		RETURN_FALSE;
@@ -442,12 +442,12 @@ PHP_METHOD(Encrypt, encode)
 	RETURN_STRING(output, 1);
 }
 
-PHP_METHOD(Encrypt, decode)
+PHP_METHOD(encrypt_AES, decode)
 {
 	char *encode_str;
 	int encode_str_len;
-	char *key = ENCRYPT_DEFAULT_KEY; //默认key
-	int key_len = sizeof(ENCRYPT_DEFAULT_KEY) - 1;
+	char *key = ENCRYPT_AES_KEY; //默认key
+	int key_len = sizeof(ENCRYPT_AES_KEY) - 1;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|s", &encode_str, &encode_str_len, &key, &key_len) == FAILURE)
 		RETURN_FALSE;
@@ -458,7 +458,7 @@ PHP_METHOD(Encrypt, decode)
 
 	RETURN_STRING(output, 1);
 }
-//Encrypt end
+//AES end
 
 //FileUtility
 PHP_METHOD(FileUtility, createDir)

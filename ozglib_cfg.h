@@ -11,7 +11,7 @@
 //定义flock（使用PHP内部函数）的参数 end
 #endif
 
-#define ENCRYPT_DEFAULT_KEY "abcABC123!@#" //Encrypt类用的默认key
+#define ENCRYPT_AES_KEY "abcABC123!@#" // ozglib\encrypt\AES类用的默认key
 
 #define F_LOCK_NAME "./lock.tmp" //并发锁的临时文件路径（默认，如果php.ini设置了该路径，这个路径就会被覆盖）
 

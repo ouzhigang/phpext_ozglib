@@ -52,11 +52,11 @@ PHP_FUNCTION(ozglib_unlock);
 PHP_FUNCTION(ozglib_page_count);
 PHP_FUNCTION(ozglib_rand_str);
 
-//可逆加密
-PHP_METHOD(Encrypt, encode);
-PHP_METHOD(Encrypt, decode);
+//AES加密解密类
+PHP_METHOD(encrypt_AES, encode);
+PHP_METHOD(encrypt_AES, decode);
 
-//文件操作
+//文件操作类
 PHP_METHOD(FileUtility, createDir);
 PHP_METHOD(FileUtility, createFile);
 PHP_METHOD(FileUtility, moveDir);
