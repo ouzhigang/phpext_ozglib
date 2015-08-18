@@ -88,7 +88,7 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>D:\downloads\php-5.5.28-src;D:\downloads\php-5.5.28-src\main;D:\downloads\php-5.5.28-src\TSRM;D:\downloads\php-5.5.28-src\Zend;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\downloads\php-5.5.28-src;D:\downloads\php-5.5.28-src\main;D:\downloads\php-5.5.28-src\TSRM;D:\downloads\php-5.5.28-src\Zend;D:\downloads\boost_1_59_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
@@ -96,15 +96,17 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>D:\downloads\php-5.5.28-nts-Win32-VC11-x86\dev\php5.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>D:\downloads\php-5.5.28-nts-Win32-VC11-x86\dev\php5.lib;D:\downloads\boost_1_59_0\stage\lib\libboost_filesystem-vc140-mt-1_59.lib;D:\downloads\boost_1_59_0\stage\lib\libboost_system-vc140-mt-1_59.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ozgcc\AES.cpp" />
+    <ClCompile Include="ozgcc\Common.cpp" />
     <ClCompile Include="ozglib.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ozgcc\AES.h" />
+    <ClInclude Include="ozgcc\Common.h" />
     <ClInclude Include="ozglib_cfg.h" />
     <ClInclude Include="php_ozglib.h" />
   </ItemGroup>

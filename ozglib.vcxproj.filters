@@ -30,13 +30,19 @@
     <ClInclude Include="ozgcc\AES.h">
       <Filter>Header Files\ozgcc</Filter>
     </ClInclude>
+    <ClInclude Include="ozgcc\Common.h">
+      <Filter>Header Files\ozgcc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ozglib.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ozgcc\AES.cpp">
       <Filter>Source Files\ozgcc</Filter>
+    </ClCompile>
+    <ClCompile Include="ozgcc\Common.cpp">
+      <Filter>Source Files\ozgcc</Filter>
+    </ClCompile>
+    <ClCompile Include="ozglib.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

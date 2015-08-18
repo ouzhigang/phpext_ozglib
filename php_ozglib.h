@@ -24,7 +24,7 @@
 extern zend_module_entry ozglib_module_entry;
 #define phpext_ozglib_ptr &ozglib_module_entry
 
-#define PHP_OZGLIB_VERSION "20150812" /* Replace with version number for your extension */
+#define PHP_OZGLIB_VERSION "20150815" /* Replace with version number for your extension */
 
 #ifdef PHP_WIN32
 #	define PHP_OZGLIB_API __declspec(dllexport)
@@ -44,6 +44,9 @@ PHP_RINIT_FUNCTION(ozglib);
 PHP_RSHUTDOWN_FUNCTION(ozglib);
 PHP_MINFO_FUNCTION(ozglib);
 
+//test
+PHP_FUNCTION(ozglib_test);
+
 //并发锁
 PHP_FUNCTION(ozglib_lock);
 PHP_FUNCTION(ozglib_unlock);
@@ -56,9 +59,8 @@ PHP_FUNCTION(ozglib_rand_str);
 PHP_METHOD(encrypt_AES, encode);
 PHP_METHOD(encrypt_AES, decode);
 
-//文件操作类
+//文件操作类，本类只针对服务器文件夹
 PHP_METHOD(FileUtility, createDir);
-PHP_METHOD(FileUtility, createFile);
 PHP_METHOD(FileUtility, moveDir);
 PHP_METHOD(FileUtility, moveFile);
 PHP_METHOD(FileUtility, unlinkDir);
@@ -92,5 +94,3 @@ ZEND_END_MODULE_GLOBALS(ozglib)*/
  * vim600: noet sw=4 ts=4 fdm=marker
  * vim<600: noet sw=4 ts=4
  */
-
-

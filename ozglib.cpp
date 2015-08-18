@@ -25,9 +25,12 @@
 #include "php.h"
 #include "php_ini.h"
 #include "ext/standard/info.h"
+
 #include "php_ozglib.h"
 #include "ozglib_cfg.h"
+
 #include "ozgcc/AES.h"
+#include "ozgcc/Common.h"
 
 #ifndef WIN32
 #include <sys/file.h>
@@ -61,6 +64,37 @@ phpfun_return_status phpfun(const char* fun_name, zend_uint argc, zval* args[])
 }
 //直接调用PHP函数 end
 
+//获取服务器路径
+static char* get_server_path()
+{
+	zval **server_pp, **doc_root_pp;
+	char *server_key = "_SERVER", *doc_root = "DOCUMENT_ROOT";
+	if (zend_hash_find(&EG(symbol_table), server_key, strlen(server_key) + 1, (void**)&server_pp) == SUCCESS)
+	{
+		HashTable *server_ht = Z_ARRVAL_PP(server_pp);
+		if (zend_hash_find(server_ht, doc_root, strlen(doc_root) + 1, (void**)&doc_root_pp) == SUCCESS)		
+			return Z_STRVAL_PP(doc_root_pp);		
+	}
+	return NULL;
+}
+//获取服务器路径 end
+
+//字符串分隔
+zval* str_split(char* separator, char* str)
+{
+	zval* args[2];
+	MAKE_STD_ZVAL(args[0]);
+	MAKE_STD_ZVAL(args[1]);
+	ZVAL_STRING(args[0], separator, 1);
+	ZVAL_STRING(args[1], str, 1);
+	phpfun_return_status return_status = phpfun("explode", 2, args);
+	if (return_status.is_success)
+		return return_status.retval;
+	
+	return NULL;
+}
+//字符串分隔 end
+
 /* True global resources - no need for thread safety here */
 static int le_ozglib;
 
@@ -69,6 +103,7 @@ static int le_ozglib;
  * Every user visible function must have an entry in ozglib_functions[].
  */
 const zend_function_entry ozglib_functions[] = {
+	PHP_FE(ozglib_test, NULL)
 	PHP_FE(ozglib_lock, NULL)
 	PHP_FE(ozglib_unlock, NULL)
 	PHP_FE(ozglib_page_count, NULL)
@@ -85,7 +120,6 @@ const zend_function_entry encrypt_AES_methods[] = {
 
 const zend_function_entry FileUtility_methods[] = {
 	PHP_ME(FileUtility, createDir, NULL, ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)
-	PHP_ME(FileUtility, createFile, NULL, ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)
 	PHP_ME(FileUtility, moveDir, NULL, ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)
 	PHP_ME(FileUtility, moveFile, NULL, ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)
 	PHP_ME(FileUtility, unlinkDir, NULL, ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)
@@ -226,6 +260,13 @@ PHP_MINFO_FUNCTION(ozglib)
 /* Remove the following function when you have successfully modified config.m4
    so that your module can be compiled into PHP, it exists only for testing
    purposes. */
+
+PHP_FUNCTION(ozglib_test)
+{
+	//测试代码
+
+	RETURN_TRUE;
+}
 
 #ifdef WIN32
 long lock_fp = 0;
@@ -463,14 +504,26 @@ PHP_METHOD(encrypt_AES, decode)
 //FileUtility
 PHP_METHOD(FileUtility, createDir)
 {
+	char *dir_path;
+	int dir_path_len;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &dir_path, &dir_path_len) == FAILURE)
+		RETURN_FALSE;
+	
+	dir_path = str_replace(dir_path, "\\", "/");
+	
+	char* tmp1 = str_append_nfree(get_server_path(), "/");
+	char* tmp2 = str_append_nfree(tmp1, dir_path);
+	char* all_dir_path = estrndup(tmp2, strlen(tmp2));
 
-	RETURN_FALSE;
-}
+	//释放内存
+	free(tmp1);
+	free(tmp2);
 
-PHP_METHOD(FileUtility, createFile)
-{
+	//PHPWRITE(all_dir_path, strlen(all_dir_path));
 
-	RETURN_FALSE;
+	dir_create(all_dir_path);
+	
+	RETURN_TRUE;
 }
 
 PHP_METHOD(FileUtility, moveDir)
