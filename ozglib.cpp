@@ -546,6 +546,28 @@ PHP_METHOD(FileUtility, unlinkDir)
 
 PHP_METHOD(FileUtility, unlinkFile)
 {
+	char *file_path;
+	int file_path_len;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &file_path, &file_path_len) == FAILURE)
+		RETURN_FALSE;
+
+	file_path = str_replace(file_path, "\\", "/");
+
+	char* tmp1 = str_append_nfree(get_server_path(), "/");
+	char* tmp2 = str_append_nfree(tmp1, file_path);
+	char* all_file_path = estrndup(tmp2, strlen(tmp2));
+
+	//ÊÍ·ÅÄÚ´æ
+	free(tmp1);
+	free(tmp2);
+		
+	if (!access(all_file_path, F_OK))
+	{		
+		if (remove(all_file_path) == 0)
+		{
+			RETURN_TRUE;
+		}
+	}
 
 	RETURN_FALSE;
 }
