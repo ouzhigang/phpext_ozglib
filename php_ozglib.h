@@ -24,7 +24,7 @@
 extern zend_module_entry ozglib_module_entry;
 #define phpext_ozglib_ptr &ozglib_module_entry
 
-#define PHP_OZGLIB_VERSION "20150815" /* Replace with version number for your extension */
+#define PHP_OZGLIB_VERSION "20150819" /* Replace with version number for your extension */
 
 #ifdef PHP_WIN32
 #	define PHP_OZGLIB_API __declspec(dllexport)
@@ -68,6 +68,18 @@ PHP_METHOD(FileUtility, unlinkFile);
 PHP_METHOD(FileUtility, copyDir);
 PHP_METHOD(FileUtility, copyFile);
 PHP_METHOD(FileUtility, getDirList);
+
+//关系型数据库访问封装接口
+PHP_METHOD(db_IDBHelper, getResults);
+PHP_METHOD(db_IDBHelper, getRow);
+PHP_METHOD(db_IDBHelper, getVar);
+PHP_METHOD(db_IDBHelper, query);
+
+//PDO封装，本类调用的是PHP内建的PDO类，本类实现db\IDBHelper接口
+PHP_METHOD(db_PDOHelper, getResults);
+PHP_METHOD(db_PDOHelper, getRow);
+PHP_METHOD(db_PDOHelper, getVar);
+PHP_METHOD(db_PDOHelper, query);
 
 /*ZEND_BEGIN_MODULE_GLOBALS(ozglib)
 	
