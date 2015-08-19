@@ -64,5 +64,8 @@ var_dump($str_decode);
 
 //服务器文件夹下的文件文件夹操作
 use \ozglib\FileUtility;
-FileUtility::createDir("aa/bb/ccc/ddddddd"); //生成文件夹，父目录不存在会自动建立
-FileUtility::unlinkFile("upload/abc.jpg"); //删除文件
+FileUtility::createDir("/aa/bb/ccc/ddddddd"); //生成文件夹，父目录不存在会自动建立
+FileUtility::unlinkFile("/upload/abc.jpg"); //删除文件、文件夹
+FileUtility::moveFile("/aa.txt", "/cc/aa/bb.txt", true); //移动文件、文件夹，最后一个参数为是否覆盖已存在的新路径，默认为true
+FileUtility::copyFile("/aa.txt", "/bb/aa2.txt", true); //复制文件，最后一个参数为是否覆盖已存在的新路径，默认为true
+FileUtility::copyDir("/aa", "/bb", true); //复制文件夹，最后一个参数为是否覆盖已存在的新路径，默认为true

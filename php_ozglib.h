@@ -61,13 +61,10 @@ PHP_METHOD(encrypt_AES, decode);
 
 //文件操作类，本类只针对服务器文件夹
 PHP_METHOD(FileUtility, createDir);
-PHP_METHOD(FileUtility, moveDir);
 PHP_METHOD(FileUtility, moveFile);
-PHP_METHOD(FileUtility, unlinkDir);
 PHP_METHOD(FileUtility, unlinkFile);
 PHP_METHOD(FileUtility, copyDir);
 PHP_METHOD(FileUtility, copyFile);
-PHP_METHOD(FileUtility, getDirList);
 
 //关系型数据库访问封装接口
 PHP_METHOD(db_IDBHelper, getResults);

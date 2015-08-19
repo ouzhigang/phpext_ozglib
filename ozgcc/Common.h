@@ -9,7 +9,12 @@
 char* str_replace(char* src, char* sub, char* dst); //替换字符串
 char* str_append_nfree(char* src_str, char* str); //字符串追加
 
-bool dir_exist(char* dir_path); //检查文件夹是否存在
 void dir_create(char* dir_path); //生成文件夹，父目录不存在会自动建立
+void dir_copy(char* from_path, char* to_path, bool over_write); //复制文件夹
+
+bool file_exist(char* file_path); //检查文件、文件夹是否存在
+void file_move(char* old_path, char* new_path, bool over_write); //移动文件、文件夹
+void file_remove(char* file_path); //删除文件、文件夹
+void file_copy(char* from_path, char* to_path, bool over_write); //复制文件
 
 #endif // __ozgcc__Common__

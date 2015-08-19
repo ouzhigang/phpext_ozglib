@@ -120,21 +120,18 @@ const zend_function_entry encrypt_AES_methods[] = {
 
 const zend_function_entry FileUtility_methods[] = {
 	PHP_ME(FileUtility, createDir, NULL, ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)
-	PHP_ME(FileUtility, moveDir, NULL, ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)
-	PHP_ME(FileUtility, moveFile, NULL, ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)
-	PHP_ME(FileUtility, unlinkDir, NULL, ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)
+	PHP_ME(FileUtility, moveFile, NULL, ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)	
 	PHP_ME(FileUtility, unlinkFile, NULL, ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)
 	PHP_ME(FileUtility, copyDir, NULL, ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)
 	PHP_ME(FileUtility, copyFile, NULL, ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)
-	PHP_ME(FileUtility, getDirList, NULL, ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
 const zend_function_entry db_IDBHelper_methods[] = {
-	PHP_ABSTRACT_ME(db_IDBHelper, getResults, NULL, ZEND_ACC_PUBLIC)
-	PHP_ABSTRACT_ME(db_IDBHelper, getRow, NULL, ZEND_ACC_PUBLIC)
-	PHP_ABSTRACT_ME(db_IDBHelper, getVar, NULL, ZEND_ACC_PUBLIC)
-	PHP_ABSTRACT_ME(db_IDBHelper, query, NULL, ZEND_ACC_PUBLIC)
+	PHP_ABSTRACT_ME(db_IDBHelper, getResults, NULL)
+	PHP_ABSTRACT_ME(db_IDBHelper, getRow, NULL)
+	PHP_ABSTRACT_ME(db_IDBHelper, getVar, NULL)
+	PHP_ABSTRACT_ME(db_IDBHelper, query, NULL)
 	PHP_FE_END
 };
 
@@ -552,22 +549,39 @@ PHP_METHOD(FileUtility, createDir)
 	RETURN_TRUE;
 }
 
-PHP_METHOD(FileUtility, moveDir)
-{
-
-	RETURN_FALSE;
-}
-
 PHP_METHOD(FileUtility, moveFile)
 {
+	char *old_path;
+	int old_path_len;
+	char *new_path;
+	int new_path_len;
+	zend_bool over_write = 1;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|s|b", &old_path, &old_path_len, &new_path, &new_path_len, &over_write) == FAILURE)
+		RETURN_FALSE;
 
-	RETURN_FALSE;
-}
+	old_path = str_replace(old_path, "\\", "/");
+	new_path = str_replace(new_path, "\\", "/");
 
-PHP_METHOD(FileUtility, unlinkDir)
-{
+	char* server_path = get_server_path();
 
-	RETURN_FALSE;
+	char* tmp1 = str_append_nfree(server_path, "/");
+	char* tmp2 = str_append_nfree(tmp1, old_path);
+	char* all_old_path = estrndup(tmp2, strlen(tmp2));
+		
+	char* tmp3 = str_append_nfree(server_path, "/");
+	char* tmp4 = str_append_nfree(tmp3, new_path);
+	char* all_new_path = estrndup(tmp4, strlen(tmp4));
+
+	//释放内存
+	free(tmp1);
+	free(tmp2);
+	free(tmp3);
+	free(tmp4);
+
+	bool over_write_b = over_write ? true : false;
+	file_move(all_old_path, all_new_path, over_write_b);
+
+	RETURN_TRUE;
 }
 
 PHP_METHOD(FileUtility, unlinkFile)
@@ -586,35 +600,82 @@ PHP_METHOD(FileUtility, unlinkFile)
 	//释放内存
 	free(tmp1);
 	free(tmp2);
-		
-	if (!access(all_file_path, F_OK))
-	{		
-		if (remove(all_file_path) == 0)
-		{
-			RETURN_TRUE;
-		}
-	}
+	
+	file_remove(all_file_path);
 
-	RETURN_FALSE;
+	RETURN_TRUE;
 }
 
 PHP_METHOD(FileUtility, copyDir)
 {
+	char *from_path;
+	int from_path_len;
+	char *to_path;
+	int to_path_len;
+	zend_bool over_write = 1;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|s|b", &from_path, &from_path_len, &to_path, &to_path_len, &over_write) == FAILURE)
+		RETURN_FALSE;
 
-	RETURN_FALSE;
+	from_path = str_replace(from_path, "\\", "/");
+	to_path = str_replace(to_path, "\\", "/");
+
+	char* server_path = get_server_path();
+
+	char* tmp1 = str_append_nfree(server_path, "/");
+	char* tmp2 = str_append_nfree(tmp1, from_path);
+	char* all_from_path = estrndup(tmp2, strlen(tmp2));
+
+	char* tmp3 = str_append_nfree(server_path, "/");
+	char* tmp4 = str_append_nfree(tmp3, to_path);
+	char* all_to_path = estrndup(tmp4, strlen(tmp4));
+
+	//释放内存
+	free(tmp1);
+	free(tmp2);
+	free(tmp3);
+	free(tmp4);
+
+	bool over_write_b = over_write ? true : false;
+	dir_copy(all_from_path, all_to_path, over_write_b);
+
+	RETURN_TRUE;
 }
 
 PHP_METHOD(FileUtility, copyFile)
 {
+	char *from_path;
+	int from_path_len;
+	char *to_path;
+	int to_path_len;
+	zend_bool over_write = 1;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|s|b", &from_path, &from_path_len, &to_path, &to_path_len, &over_write) == FAILURE)
+		RETURN_FALSE;
 
-	RETURN_FALSE;
+	from_path = str_replace(from_path, "\\", "/");
+	to_path = str_replace(to_path, "\\", "/");
+
+	char* server_path = get_server_path();
+
+	char* tmp1 = str_append_nfree(server_path, "/");
+	char* tmp2 = str_append_nfree(tmp1, from_path);
+	char* all_from_path = estrndup(tmp2, strlen(tmp2));
+
+	char* tmp3 = str_append_nfree(server_path, "/");
+	char* tmp4 = str_append_nfree(tmp3, to_path);
+	char* all_to_path = estrndup(tmp4, strlen(tmp4));
+
+	//释放内存
+	free(tmp1);
+	free(tmp2);
+	free(tmp3);
+	free(tmp4);
+
+	bool over_write_b = over_write ? true : false;
+	file_copy(all_from_path, all_to_path, over_write_b);
+
+	RETURN_TRUE;
 }
 
-PHP_METHOD(FileUtility, getDirList)
-{
-
-	RETURN_FALSE;
-}
 //FileUtility end
 
 //db\PDOHelper
