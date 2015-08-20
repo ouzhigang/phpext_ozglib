@@ -33,6 +33,9 @@
     <ClInclude Include="ozgcc\Common.h">
       <Filter>Header Files\ozgcc</Filter>
     </ClInclude>
+    <ClInclude Include="ozgcc\IpFinder.h">
+      <Filter>Header Files\ozgcc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ozgcc\AES.cpp">
@@ -43,6 +46,9 @@
     </ClCompile>
     <ClCompile Include="ozglib.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ozgcc\IpFinder.cpp">
+      <Filter>Source Files\ozgcc</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

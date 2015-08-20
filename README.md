@@ -30,6 +30,8 @@ php.ini可设置锁定文件的路径
 
 ozglib.lock_name="D:/test.tmp"
 
+ozglib.ip_db="D:/qqwry.dat"
+
 ~~~~~~~~~~php
 <?php
 //并发锁
@@ -51,6 +53,9 @@ $page_count = ozglib_page_count(11, 5);
 //OZGLIB_RAND_STR_LOWER_NUMBER
 //OZGLIB_RAND_STR_ALL
 $rand_str = ozglib_rand_str(OZGLIB_RAND_STR_ALL, 10);
+
+//纯真IP数据库查询
+$address = ozglib_ip_to_address("11.11.11.11"); //参数2可传入数据库的路径，默认可在php.ini设置
 
 //AES加密
 //AES::encode为加密方法，参数1为加密前的字符串，参数2为key（默认值在ozglib_cfg.h里面设置）

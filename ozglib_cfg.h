@@ -14,6 +14,7 @@
 #define ENCRYPT_AES_KEY "abcABC123!@#" // ozglib\encrypt\AES类用的默认key
 
 #define F_LOCK_NAME "./lock.tmp" //并发锁的临时文件路径（默认，如果php.ini设置了该路径，这个路径就会被覆盖）
+#define F_IP_DB "D:/qqwry.dat" //纯真IP数据库的路径
 
 //ozglib_rand_str函数的常量
 #define OZGLIB_RAND_STR_LOWER 0x00000001

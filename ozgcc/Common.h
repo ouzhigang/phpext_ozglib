@@ -3,7 +3,8 @@
 
 #include <stdio.h>
 
-//后缀为ndel的函数需要手工释放，ndel == not delete
+void _ozgtest(const char* test_str);
+
 //后缀为nfree的函数需要手工释放，nfree == not nfree
 
 char* str_replace(char* src, char* sub, char* dst); //替换字符串
@@ -16,5 +17,7 @@ bool file_exist(char* file_path); //检查文件、文件夹是否存在
 void file_move(char* old_path, char* new_path, bool over_write); //移动文件、文件夹
 void file_remove(char* file_path); //删除文件、文件夹
 void file_copy(char* from_path, char* to_path, bool over_write); //复制文件
+
+char* ip_to_address_nfree(const char* ip, const char* ip_db_path); //ip地址转换为地理位置
 
 #endif // __ozgcc__Common__

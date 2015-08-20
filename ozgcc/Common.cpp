@@ -8,11 +8,15 @@
 
 #include "boost/filesystem.hpp"
 
+#include "IpFinder.h"
+
 using namespace std;
 namespace fs = boost::filesystem;
 
+using namespace ozgcc;
+
 //调试变量用的函数
-void _test(const char* test_str)
+void _ozgtest(const char* test_str)
 {
 	ofstream f("D:\\ozglib.log", ios::app | ios::out);
 	f.seekp(ios::end);
@@ -137,9 +141,9 @@ void file_move(char* old_path, char* new_path, bool over_write)
 				return;
 		}
 
-		//_test(new_path_p.parent_path().string().c_str());
+		//_ozgtest(new_path_p.parent_path().string().c_str());
 		if (!file_exist((char*)new_path_p.parent_path().string().c_str()))
-		{			
+		{
 			dir_create((char*)new_path_p.parent_path().string().c_str());
 		}
 		
@@ -176,4 +180,24 @@ void file_copy(char* from_path, char* to_path, bool over_write)
 		fs::copy_file(from_path_p, to_path_p);
 	}
 	
+}
+
+char* ip_to_address_nfree(const char* ip, const char* ip_db_path)
+{
+	string country, location;
+
+	IpFinder *ip_finder = new IpFinder(ip_db_path);
+	ip_finder->GetAddressByIp(ip, country, location);
+	
+	delete ip_finder;
+
+	string tmp(country);
+	tmp.append(" ");
+	tmp.append(location);
+	//_ozgtest(ret.c_str());
+
+	char* res = (char*)malloc(tmp.size());
+	strcpy(res, tmp.c_str());
+
+	return res;
 }

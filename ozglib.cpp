@@ -108,6 +108,7 @@ const zend_function_entry ozglib_functions[] = {
 	PHP_FE(ozglib_unlock, NULL)
 	PHP_FE(ozglib_page_count, NULL)
 	PHP_FE(ozglib_rand_str, NULL)
+	PHP_FE(ozglib_ip_to_address, NULL)
 	PHP_FE_END
 };
 /* }}} */
@@ -124,22 +125,6 @@ const zend_function_entry FileUtility_methods[] = {
 	PHP_ME(FileUtility, unlinkFile, NULL, ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)
 	PHP_ME(FileUtility, copyDir, NULL, ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)
 	PHP_ME(FileUtility, copyFile, NULL, ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)
-	PHP_FE_END
-};
-
-const zend_function_entry db_IDBHelper_methods[] = {
-	PHP_ABSTRACT_ME(db_IDBHelper, getResults, NULL)
-	PHP_ABSTRACT_ME(db_IDBHelper, getRow, NULL)
-	PHP_ABSTRACT_ME(db_IDBHelper, getVar, NULL)
-	PHP_ABSTRACT_ME(db_IDBHelper, query, NULL)
-	PHP_FE_END
-};
-
-const zend_function_entry db_PDOHelper_methods[] = {
-	PHP_ME(db_PDOHelper, getResults, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(db_PDOHelper, getRow, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(db_PDOHelper, getVar, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(db_PDOHelper, query, NULL, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
@@ -172,6 +157,7 @@ ZEND_GET_MODULE(ozglib)
 
 PHP_INI_BEGIN()
 	PHP_INI_ENTRY("ozglib.lock_name", F_LOCK_NAME, PHP_INI_ALL, NULL)
+	PHP_INI_ENTRY("ozglib.ip_db", F_IP_DB, PHP_INI_ALL, NULL)
     //STD_PHP_INI_ENTRY("ozglib.global_value",      "42", PHP_INI_ALL, OnUpdateLong, global_value, zend_ozglib_globals, ozglib_globals)
     //STD_PHP_INI_ENTRY("ozglib.global_string", "foobar", PHP_INI_ALL, OnUpdateString, global_string, zend_ozglib_globals, ozglib_globals)
 PHP_INI_END()
@@ -189,7 +175,7 @@ static void php_ozglib_init_globals(zend_ozglib_globals *ozglib_globals)
 */
 /* }}} */
 
-zend_class_entry *encrypt_AES_ce, *FileUtility_ce, *db_IDBHelper_ce, *db_PDOHelper_ce;
+zend_class_entry *encrypt_AES_ce, *FileUtility_ce;
 
 /* {{{ PHP_MINIT_FUNCTION
  */
@@ -197,7 +183,7 @@ PHP_MINIT_FUNCTION(ozglib)
 {
 	REGISTER_INI_ENTRIES();
 
-	zend_class_entry encrypt_AES, FileUtility, db_IDBHelper, db_PDOHelper;
+	zend_class_entry encrypt_AES, FileUtility;
 
 //php5.3以上支持namespace
 #if PHP_VERSION_ID >= 50300
@@ -205,24 +191,16 @@ PHP_MINIT_FUNCTION(ozglib)
 	INIT_NS_CLASS_ENTRY(encrypt_AES, "ozglib\\encrypt", "AES", encrypt_AES_methods);
 	INIT_NS_CLASS_ENTRY(FileUtility, "ozglib", "FileUtility", FileUtility_methods);
 
-	INIT_NS_CLASS_ENTRY(db_IDBHelper, "ozglib\\db", "IDBHelper", db_IDBHelper_methods);
-	INIT_NS_CLASS_ENTRY(db_PDOHelper, "ozglib\\db", "PDOHelper", db_PDOHelper_methods);
 #else
 	//不支持namespace，加上Ozg的前缀
 	INIT_CLASS_ENTRY(AES, "OzgLibEncryptAES", encrypt_AES_methods); //定义OzgLibEncryptAES类
 	INIT_CLASS_ENTRY(FileUtility, "OzgLibFileUtility", FileUtility_methods); //定义OzgLibFileUtility类
 
-	INIT_CLASS_ENTRY(db_IDBHelper, "OzgLibDbIDBHelper", db_IDBHelper_methods);
-	INIT_CLASS_ENTRY(db_PDOHelper, "OzgLibDbPDOHelper", db_PDOHelper_methods);
 #endif
 
 	encrypt_AES_ce = zend_register_internal_class(&encrypt_AES TSRMLS_CC);
 	FileUtility_ce = zend_register_internal_class(&FileUtility TSRMLS_CC);
-	
-	db_IDBHelper_ce = zend_register_internal_interface(&db_IDBHelper TSRMLS_CC);
-	db_PDOHelper_ce = zend_register_internal_class(&db_PDOHelper TSRMLS_CC);
-	zend_class_implements(db_PDOHelper_ce TSRMLS_CC, 1, db_IDBHelper_ce);
-
+		
 	//注册本模块的常量
 	REGISTER_MAIN_LONG_CONSTANT("OZGLIB_RAND_STR_LOWER", OZGLIB_RAND_STR_LOWER, CONST_PERSISTENT | CONST_CS);
 	REGISTER_MAIN_LONG_CONSTANT("OZGLIB_RAND_STR_UPPER", OZGLIB_RAND_STR_UPPER, CONST_PERSISTENT | CONST_CS);
@@ -488,6 +466,30 @@ PHP_FUNCTION(ozglib_rand_str)
 	RETURN_STRING(output, 0);
 }
 
+PHP_FUNCTION(ozglib_ip_to_address)
+{
+	char* f_ip_db = INI_STR("ozglib.ip_db");
+
+	char *ip;
+	int ip_len;
+	char *ip_db = f_ip_db;
+	int ip_db_len = sizeof(f_ip_db) - 1;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|s", &ip, &ip_len, &ip_db, &ip_db_len) == FAILURE)
+		RETURN_FALSE;
+
+	if (!file_exist(ip_db))
+	{
+		RETURN_FALSE;
+	}
+
+	char* tmp = ip_to_address_nfree(ip, ip_db);
+	char* address = estrndup(tmp, strlen(tmp));
+	free(tmp);
+
+	RETURN_STRING(address, 0);
+}
+
 //encrypt\AES
 PHP_METHOD(encrypt_AES, encode)
 {
@@ -675,34 +677,7 @@ PHP_METHOD(FileUtility, copyFile)
 
 	RETURN_TRUE;
 }
-
 //FileUtility end
-
-//db\PDOHelper
-PHP_METHOD(db_PDOHelper, getResults)
-{
-
-	RETURN_FALSE;
-}
-
-PHP_METHOD(db_PDOHelper, getRow)
-{
-
-	RETURN_FALSE;
-}
-
-PHP_METHOD(db_PDOHelper, getVar)
-{
-
-	RETURN_FALSE;
-}
-
-PHP_METHOD(db_PDOHelper, query)
-{
-
-	RETURN_FALSE;
-}
-//db\PDOHelper end
 
 /* }}} */
 /* The previous line is meant for vim and emacs, so it can correctly fold and 

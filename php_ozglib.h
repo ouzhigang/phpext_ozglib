@@ -54,6 +54,7 @@ PHP_FUNCTION(ozglib_unlock);
 //公用函数
 PHP_FUNCTION(ozglib_page_count);
 PHP_FUNCTION(ozglib_rand_str);
+PHP_FUNCTION(ozglib_ip_to_address);
 
 //AES加密解密类
 PHP_METHOD(encrypt_AES, encode);
@@ -65,18 +66,6 @@ PHP_METHOD(FileUtility, moveFile);
 PHP_METHOD(FileUtility, unlinkFile);
 PHP_METHOD(FileUtility, copyDir);
 PHP_METHOD(FileUtility, copyFile);
-
-//关系型数据库访问封装接口
-PHP_METHOD(db_IDBHelper, getResults);
-PHP_METHOD(db_IDBHelper, getRow);
-PHP_METHOD(db_IDBHelper, getVar);
-PHP_METHOD(db_IDBHelper, query);
-
-//PDO封装，本类调用的是PHP内建的PDO类，本类实现db\IDBHelper接口
-PHP_METHOD(db_PDOHelper, getResults);
-PHP_METHOD(db_PDOHelper, getRow);
-PHP_METHOD(db_PDOHelper, getVar);
-PHP_METHOD(db_PDOHelper, query);
 
 /*ZEND_BEGIN_MODULE_GLOBALS(ozglib)
 	
