@@ -7,10 +7,12 @@
 #include <cstdarg>
 
 #include "boost/filesystem.hpp"
+#include "boost/smart_ptr.hpp"
 
 #include "IpFinder.h"
 
 using namespace std;
+using namespace boost;
 namespace fs = boost::filesystem;
 
 using namespace ozgcc;
@@ -186,11 +188,10 @@ char* ip_to_address_nfree(const char* ip, const char* ip_db_path)
 {
 	string country, location;
 
-	IpFinder *ip_finder = new IpFinder(ip_db_path);
+	//scoped_ptr<IpFinder> ip_finder(new IpFinder(ip_db_path));
+	boost::shared_ptr<IpFinder> ip_finder = boost::make_shared<IpFinder>(ip_db_path);
 	ip_finder->GetAddressByIp(ip, country, location);
 	
-	delete ip_finder;
-
 	string tmp(country);
 	tmp.append(" ");
 	tmp.append(location);
