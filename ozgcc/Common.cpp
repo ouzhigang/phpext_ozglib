@@ -11,6 +11,7 @@
 #include "boost/lexical_cast.hpp"
 #include "boost/foreach.hpp"
 #include "boost/scoped_ptr.hpp"
+#include "boost/make_shared.hpp"
 
 #include "IpFinder.h"
 
