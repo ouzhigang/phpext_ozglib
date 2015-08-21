@@ -7,10 +7,15 @@
 #include <cstdarg>
 
 #include "boost/filesystem.hpp"
+#include "boost/algorithm/string.hpp"
+#include "boost/lexical_cast.hpp"
+#include "boost/foreach.hpp"
+#include "boost/scoped_ptr.hpp"
 
 #include "IpFinder.h"
 
 using namespace std;
+using namespace boost;
 namespace fs = boost::filesystem;
 
 using namespace ozgcc;
@@ -57,26 +62,10 @@ char* str_replace(char* src, char* sub, char* dst)
 	if (strstr(src, sub) == NULL)
 		return src;
 
-	int pos = 0;
-	int offset = 0;
-	int srcLen, subLen, dstLen;
-	char* pRet = NULL;
+	string src_s(src);
+	replace_all(src_s, string(sub), string(dst));
 
-	srcLen = strlen(src);
-	subLen = strlen(sub);
-	dstLen = strlen(dst);
-	pRet = (char*)malloc(srcLen + dstLen - subLen + 1); //(外部是否该空间)if (NULL != pRet)
-	{
-		pos = strstr(src, sub) - src;
-		memcpy(pRet, src, pos);
-		offset += pos;
-		memcpy(pRet + offset, dst, dstLen);
-		offset += dstLen;
-		memcpy(pRet + offset, src + pos + subLen, srcLen - pos - subLen);
-		offset += srcLen - pos - subLen;
-		*(pRet + offset) = '\0';
-	}
-	return pRet;
+	return (char*)src_s.c_str();
 }
 
 char* str_append_nfree(char* src_str, char* str)
