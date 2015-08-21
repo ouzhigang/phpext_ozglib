@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <cstdarg>
+#include <ctime>
 
 #include "boost/filesystem.hpp"
 #include "boost/algorithm/string.hpp"
@@ -12,6 +13,8 @@
 #include "boost/foreach.hpp"
 #include "boost/scoped_ptr.hpp"
 #include "boost/make_shared.hpp"
+#include "boost/random.hpp"
+#include "boost/random/uniform_int.hpp"
 
 #include "IpFinder.h"
 
@@ -79,6 +82,20 @@ char* str_append_nfree(char* src_str, char* str)
 	char* res = (char*)malloc(src_str_s.size());
 	strcpy(res, src_str_s.c_str());
 
+	return res;
+}
+
+char* str_random_nfree(char* str, int len)
+{
+	boost::random::mt19937_64 gen(time(0));
+	boost::uniform_int<> real(0, strlen(str) - 1);
+
+	char* res = (char*)malloc(len + 1);
+	for (int i = 0; i < len; i++)
+	{
+		res[i] = str[real(gen)];
+	}
+	res[len] = '\0';
 	return res;
 }
 

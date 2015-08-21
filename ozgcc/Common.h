@@ -9,6 +9,7 @@ void _ozgtest(const char* test_str);
 
 char* str_replace(char* src, char* sub, char* dst); //替换字符串
 char* str_append_nfree(char* src_str, char* str); //字符串追加
+char* str_random_nfree(char* str, int len); //随机字符串，参数1为需要随机的字符串，参数2为随机字符串的长度。（本函数1秒钟才更新一次，不适合高并发环境下使用）
 
 void dir_create(char* dir_path); //生成文件夹，父目录不存在会自动建立
 void dir_copy(char* from_path, char* to_path, bool over_write); //复制文件夹
