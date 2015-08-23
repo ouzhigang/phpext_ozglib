@@ -1,7 +1,9 @@
 #ifndef __ozgcc__Common__
 #define __ozgcc__Common__
 
+extern "C" {
 #include <stdio.h>
+}
 
 void _ozgtest(const char* test_str);
 

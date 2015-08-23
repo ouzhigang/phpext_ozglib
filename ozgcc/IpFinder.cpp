@@ -1,6 +1,17 @@
 #include "IpFinder.h"
 
+extern "C" {
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <assert.h>
+}
+
 using namespace ozgcc;
+
+#ifndef WIN32
+#define _snprintf snprintf
+#endif
 
 // ============================================================================
 // ==============================================================================
@@ -70,16 +81,14 @@ unsigned long IpFinder::IpString2IpValue(const char *pszIp) const
 // ============================================================================
 //    根据ip值获取字符串（由点分割）
 // ============================================================================
-void IpFinder::IpValue2IpString(unsigned long ipValue,
-	char *pszIpAddress,
-	int nMaxCount) const
+void IpFinder::IpValue2IpString(unsigned long ipValue, char *pszIpAddress, int nMaxCount) const
 {
-	if (!pszIpAddress) {
+	if (!pszIpAddress) 
+	{
 		return;
 	}
 
-	_snprintf(pszIpAddress, nMaxCount, "%d.%d.%d.%d", (ipValue & 0xFF000000) >> 24,
-		(ipValue & 0x00FF0000) >> 16, (ipValue & 0x0000FF00) >> 8, ipValue & 0x000000FF);
+	_snprintf(pszIpAddress, nMaxCount, "%d.%d.%d.%d", (ipValue & 0xFF000000) >> 24, (ipValue & 0x00FF0000) >> 16, (ipValue & 0x0000FF00) >> 8, ipValue & 0x000000FF);
 	pszIpAddress[nMaxCount - 1] = 0;
 }
 

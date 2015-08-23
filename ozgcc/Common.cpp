@@ -4,8 +4,11 @@
 #include <fstream>
 #include <string>
 #include <vector>
-#include <cstdarg>
-#include <ctime>
+
+extern "C" {
+#include <stdarg.h>
+#include <time.h>
+}
 
 #include "boost/filesystem.hpp"
 #include "boost/algorithm/string.hpp"

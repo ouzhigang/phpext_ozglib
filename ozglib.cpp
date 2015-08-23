@@ -18,24 +18,32 @@
 
 /* $Id$ */
 
+extern "C" {
 #ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
+
+#include <fcntl.h>
+#include <sys/types.h>
+
+#ifndef WIN32
+#include <stdio.h>
+#include <errno.h>
+#include <sys/stat.h>
+#include <sys/file.h>
+#include <unistd.h>
 #endif
 
 #include "php.h"
 #include "php_ini.h"
 #include "ext/standard/info.h"
-
 #include "php_ozglib.h"
+}
+
 #include "ozglib_cfg.h"
 
 #include "ozgcc/AES.h"
 #include "ozgcc/Common.h"
-
-#ifndef WIN32
-#include <sys/file.h>
-
-#endif
 
 //直接调用PHP函数
 struct phpfun_return_status
@@ -265,7 +273,7 @@ PHP_MINFO_FUNCTION(ozglib)
 PHP_FUNCTION(ozglib_test)
 {
 	//测试代码
-
+	
 	RETURN_TRUE;
 }
 

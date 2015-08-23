@@ -1,6 +1,6 @@
 ##功能不定期增加中...
 
-目前只在windows环境下测试，使用vs2015编译通过。
+使用vs2015编译通过。
 
 需要设置项目属性：
 
@@ -31,6 +31,15 @@ php.ini可设置锁定文件的路径
 ozglib.lock_name="D:/test.tmp"
 
 ozglib.ip_db="D:/qqwry.dat"
+
+
+
+================
+
+ubuntu编译通过，需要将所有的.h和.cpp文件转成utf-8编码，然后修改config.m4相应的boost路径
+
+
+
 
 ~~~~~~~~~~php
 <?php

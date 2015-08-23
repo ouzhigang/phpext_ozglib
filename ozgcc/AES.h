@@ -1,7 +1,9 @@
 #ifndef __ozgcc__AES__
 #define __ozgcc__AES__
 
+extern "C" {
 #include <string.h>
+}
 
 namespace ozgcc
 {
